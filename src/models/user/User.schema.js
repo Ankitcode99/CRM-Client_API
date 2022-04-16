@@ -33,7 +33,5 @@ const UserSchema = new mongoose.Schema({
     }  
 })
 
-module.exports = {
+module.exports = mongoose.model('UserData', UserSchema)
     // model('db table name', Schema)
-    UserSchema : mongoose.model('User', UserSchema)
-};
