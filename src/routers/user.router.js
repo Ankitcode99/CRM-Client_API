@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { hashPassword, comparePwd } = require('../helpers/bcrypt.helper');
+const { createAccessJWT, createRefreshJWT } = require('../helpers/jwt.helper');
 const UserData = require('../models/user/User.schema')
 
 router.get('/',(req,res)=>{
@@ -49,10 +50,15 @@ router.post('/login',async (req,res)=>{
         })
     }else{
         const passwordCheck = await comparePwd(password,passFromDb);
-    
         if(passwordCheck){
+            const accessJWT = await createAccessJWT(email, `${data._id}`);
+            const refreshJWT = await createRefreshJWT(email, data._id);
+
+            
             res.status(200).json({
-                msg:"Sign in successful"
+                msg:"Sign in successful",
+                accessJWT,
+                refreshJWT
             })
         }else{
             res.status(401).json({

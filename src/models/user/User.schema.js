@@ -30,7 +30,19 @@ const UserSchema = new mongoose.Schema({
         minlength: 8,
         maxlength: 100,
         required: true
-    }  
+    },
+    refreshJWT:{
+        token:{
+            type:String,
+            maxlength:500,
+            default:''
+        },
+        addedAt:{
+            type:Date,
+            require:true,
+            default: Date.now()
+        }
+    }
 })
 
 module.exports = mongoose.model('UserData', UserSchema)
