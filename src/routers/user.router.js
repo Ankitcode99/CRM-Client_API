@@ -3,11 +3,23 @@ const router = express.Router();
 const { hashPassword, comparePwd } = require('../helpers/bcrypt.helper');
 const { createAccessJWT, createRefreshJWT } = require('../helpers/jwt.helper');
 const UserData = require('../models/user/User.schema')
+const {userAuthorization} = require('../middlewares/authorization.middleware')
 
-router.get('/',(req,res)=>{
-    res.json({
-        msg:"User router"
-    })
+router.get('/',userAuthorization, async (req,res)=>{
+
+    const _id = req.userID;
+    try {
+        const secretData = await UserData.findById(_id)
+    
+        res.json({
+            msg:"User router",
+            secretData
+        })
+    } catch (error) {
+        res.json({
+            msg:error.message
+        })
+    }
 })
 
 router.post('/',async(req,res)=>{
