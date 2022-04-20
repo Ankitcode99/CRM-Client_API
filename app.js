@@ -18,8 +18,8 @@ app.use(bodyParser.json());
 connectDB()
 
 app.use('/v1/user',require('./src/routers/user.router'));
-
 app.use('/v1/ticket',require('./src/routers/ticket.router'))
+app.use('/v1/token',require('./src/routers/token.router'))
 
 const handleError = require('./src/utils/errorHandler');
 // if no route exist
