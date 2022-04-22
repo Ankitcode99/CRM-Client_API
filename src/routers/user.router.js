@@ -4,8 +4,9 @@ const { hashPassword, comparePwd } = require('../helpers/bcrypt.helper');
 const { createAccessJWT, createRefreshJWT } = require('../helpers/jwt.helper');
 const UserData = require('../models/user/User.schema')
 const {userAuthorization} = require('../middlewares/authorization.middleware');
-const { setResetPasswordPin } = require('../models/resPin/ResPin.model');
+const { setResetPasswordPin, getPinByEmailPin, deletePin } = require('../models/resPin/ResPin.model');
 const { emailProcesser } = require('../helpers/email.helper');
+const { updatePassword } = require('../models/user/User.model');
 
 router.get('/',userAuthorization, async (req,res)=>{
 
@@ -89,26 +90,53 @@ router.post('/reset-password', async(req,res)=>{
     console.log(user)
     if(user && user._id){
         const setPin = await setResetPasswordPin(email);
-        const result = await emailProcesser(email,setPin.pin)
-        if(result && result.messageId){
+        await emailProcesser(email,setPin.pin,"request-new-pass")
             return res.status(200).json({
                 status:"success",
-                message:"Password reset link sent successfully"
+                message:"The password reset link will be sent shortly if the email is valid"
+            })   
+    }
+        res.json({
+            status:"error",
+            message:"The password reset link will be sent shortly if the email is valid"
+        })
+    
+})
+
+router.patch('/reset-password', async(req,res)=>{
+    const {email, pin, newPassword} = req.body;
+
+    const result = await getPinByEmailPin(email, pin);
+    if(result && result.email){
+        const dbDate = result.addedAt;
+        const expiryDate = dbDate.setDate(dbDate.getDate() + 1);
+        const today = new Date()
+        if(today > expiryDate){
+            return res.json({
+                status:"error",
+                message:"Invalid or expired pin"
             })
         }
 
-        return res.json({
-            status:"error",
-            message:"Unable to send the email. Please try again later!"
-        })
+        const hashedPass = await hashPassword(newPassword);
+
+        const user = await updatePassword(email, hashedPass)
+
+        await emailProcesser(email, pin, "password-update-success")
+        await deletePin(email, pin)
+        if(user._id){
+            return res.json({
+                status:"success",
+                message:"Passowrd updated successfully!"
+            })
+        }
     }
-    else{
-        res.json({
-            status:"error",
-            message:"The password reset link will be sent shortly is the email is valid"
-        })
-    }
-    
+
+    res.json({
+        status:"error",
+        message:"Unable to update your password, please try again later!"
+    })
+
 })
 
 module.exports = router;

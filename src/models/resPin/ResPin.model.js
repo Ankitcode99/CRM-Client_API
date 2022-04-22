@@ -1,3 +1,4 @@
+const { off } = require('./ResPin.schema');
 const ResetPinSchema = require('./ResPin.schema');
 //const UserData = require('./User.schema');
 
@@ -17,6 +18,42 @@ const setResetPasswordPin = async (email) => {
     return res;
 }
 
+const getPinByEmailPin = async (email,pin) => {
+    return new Promise((resolve,reject)=>{
+        try {
+            ResetPinSchema.findOne({ email, pin},(error,res)=>{
+                if(error){
+                    console.log(error);
+                    resolve(false);
+                }
+    
+                resolve(res);
+            })
+        } catch (error) {
+            reject(error)
+            console.log(error)
+        }
+    })
+}
+
+const deletePin = async(email,pin) => {
+    return new Promise((resolve,reject)=>{
+        try {
+            ResetPinSchema.findOneAndDelete({email, pin},(error,res)=>{
+                if(error){
+                    console.log(error)
+                    resolve(false)
+                }
+            })
+        } catch (error) {
+            console.log(error);
+            reject(error)
+        }
+    })
+}
+
 module.exports = {
-    setResetPasswordPin
+    setResetPasswordPin,
+    getPinByEmailPin,
+    deletePin
 }
