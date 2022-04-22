@@ -5,6 +5,7 @@ const { createAccessJWT, createRefreshJWT } = require('../helpers/jwt.helper');
 const UserData = require('../models/user/User.schema')
 const {userAuthorization} = require('../middlewares/authorization.middleware');
 const { setResetPasswordPin } = require('../models/resPin/ResPin.model');
+const { emailProcesser } = require('../helpers/email.helper');
 
 router.get('/',userAuthorization, async (req,res)=>{
 
@@ -87,11 +88,18 @@ router.post('/reset-password', async(req,res)=>{
     const user = await UserData.findOne({ email:email });
     console.log(user)
     if(user && user._id){
-        const result = await setResetPasswordPin(email);
-        console.log(result);
-        res.status(200).json({
-            status:"success",
-            message:"Password reset link sent successfully"
+        const setPin = await setResetPasswordPin(email);
+        const result = await emailProcesser(email,setPin.pin)
+        if(result && result.messageId){
+            return res.status(200).json({
+                status:"success",
+                message:"Password reset link sent successfully"
+            })
+        }
+
+        return res.json({
+            status:"error",
+            message:"Unable to send the email. Please try again later!"
         })
     }
     else{
