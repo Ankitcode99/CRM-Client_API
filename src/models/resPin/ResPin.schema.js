@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const ResetPinSchema = new mongoose.Schema({
     pin:{
-        type: Number,
+        type: String,
         maxlength: 6,
         minlength: 6
     },

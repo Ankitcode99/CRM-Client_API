@@ -7,6 +7,7 @@ const {userAuthorization} = require('../middlewares/authorization.middleware');
 const { setResetPasswordPin, getPinByEmailPin, deletePin } = require('../models/resPin/ResPin.model');
 const { emailProcesser } = require('../helpers/email.helper');
 const { updatePassword } = require('../models/user/User.model');
+const { resetPasswordRequestValidation, updatePasswordValidation } = require('../middlewares/formValidation.middleware');
 
 router.get('/',userAuthorization, async (req,res)=>{
 
@@ -84,7 +85,7 @@ router.post('/login',async (req,res)=>{
 
 })
 
-router.post('/reset-password', async(req,res)=>{
+router.post('/reset-password', resetPasswordRequestValidation, async(req,res)=>{
     const {email} = req.body;
     const user = await UserData.findOne({ email:email });
     console.log(user)
@@ -103,7 +104,7 @@ router.post('/reset-password', async(req,res)=>{
     
 })
 
-router.patch('/reset-password', async(req,res)=>{
+router.patch('/reset-password', updatePasswordValidation,async(req,res)=>{
     const {email, pin, newPassword} = req.body;
 
     const result = await getPinByEmailPin(email, pin);
