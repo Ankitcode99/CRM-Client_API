@@ -12,6 +12,7 @@ const setJWT = (key, value) => {
             client.set(key,value, (err,res)=>{
                 if(err) reject(err)
                 resolve(res);
+                console.log(res)
             })
         })
     } catch (error) {

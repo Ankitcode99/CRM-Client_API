@@ -8,6 +8,7 @@ const { setResetPasswordPin, getPinByEmailPin, deletePin } = require('../models/
 const { emailProcesser } = require('../helpers/email.helper');
 const { updatePassword } = require('../models/user/User.model');
 const { resetPasswordRequestValidation, updatePasswordValidation } = require('../middlewares/formValidation.middleware');
+const { deleteJWT } = require('../helpers/redis.helper');
 
 router.get('/',userAuthorization, async (req,res)=>{
 
@@ -138,6 +139,25 @@ router.patch('/reset-password', updatePasswordValidation,async(req,res)=>{
         message:"Unable to update your password, please try again later!"
     })
 
+})
+
+router.delete('/logout',userAuthorization, async(req,res)=>{
+    const {authorization} = req.headers
+    const _id = req.userID;
+
+    deleteJWT(authorization)
+    const ress = await UserData.findOneAndUpdate({_id: _id},{ $set:{"refreshJWT.token":'', "refreshJWT.addedAt": Date.now()}})
+    if(ress._id){
+        return res.json({
+            status:"success",
+            message:"Logged out successfully!"
+        })
+    }
+
+    return res.json({
+        status:"error",
+        message:"Some error occurred while logging out!"
+    })
 })
 
 module.exports = router;

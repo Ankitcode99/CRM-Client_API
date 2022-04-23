@@ -7,7 +7,7 @@ const createAccessJWT = async (email, _id) =>{
         const accessJWT = jwt.sign({email},process.env.JWT_ACCESS_SECRET,{expiresIn: '1d'})
     
         await setJWT(accessJWT, _id)
-    
+        console.log("Access token added to redis")
         return Promise.resolve(accessJWT)
     } catch (error) {
         return Promise.reject(error);
